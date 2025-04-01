@@ -1,1 +1,1 @@
-This hase been made public.
+This has been made public.
