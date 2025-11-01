@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="zh-TW">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Greeting Card</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .card-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    }
+
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      animation: cardEntrance 0.8s ease-out;
+    }
+
+    @keyframes cardEntrance {
+      from {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .recipient-name {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 0 0 16px 0;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: nameGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes nameGlow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    .celebration {
+      font-size: 28px;
+      color: #764ba2;
+      margin: 0 0 24px 0;
+      font-weight: 600;
+    }
+
+    .message {
+      font-size: 18px;
+      color: #555;
+      line-height: 1.6;
+      margin: 0 0 32px 0;
+    }
+
+    .interactive-button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 16px 40px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .interactive-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .interactive-button:active {
+      transform: translateY(0);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      pointer-events: none;
+    }
+
+    @keyframes confettiFall {
+      to {
+        transform: translateY(100%) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .balloon {
+      position: absolute;
+      bottom: -100px;
+      animation: balloonFloat 6s ease-in-out infinite;
+    }
+
+    @keyframes balloonFloat {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+      }
+      50% {
+        transform: translateY(-20px) translateX(10px);
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="card-container" id="cardContainer">
+   <svg class="balloon" width="60" height="80" style="left: 10%;"><ellipse cx="30" cy="35" rx="25" ry="30" fill="#ff6b9d" opacity="0.8" /> <line x1="30" y1="65" x2="30" y2="80" stroke="#ff6b9d" stroke-width="2" />
+   </svg>
+   <svg class="balloon" width="60" height="80" style="left: 25%; animation-delay: 1s;"><ellipse cx="30" cy="35" rx="25" ry="30" fill="#ffd93d" opacity="0.8" /> <line x1="30" y1="65" x2="30" y2="80" stroke="#ffd93d" stroke-width="2" />
+   </svg>
+   <svg class="balloon" width="60" height="80" style="right: 25%; animation-delay: 2s;"><ellipse cx="30" cy="35" rx="25" ry="30" fill="#6bcf7f" opacity="0.8" /> <line x1="30" y1="65" x2="30" y2="80" stroke="#6bcf7f" stroke-width="2" />
+   </svg>
+   <svg class="balloon" width="60" height="80" style="right: 10%; animation-delay: 0.5s;"><ellipse cx="30" cy="35" rx="25" ry="30" fill="#667eea" opacity="0.8" /> <line x1="30" y1="65" x2="30" y2="80" stroke="#667eea" stroke-width="2" />
+   </svg>
+   <div class="card">
+    <h1 class="recipient-name" id="recipientName">Emma</h1>
+    <h2 class="celebration" id="celebrationType">生日快樂!</h2>
+    <p class="message" id="messageText">願你的每一天都充滿歡笑與喜悅,祝你有個美好的一年!</p><button class="interactive-button" id="celebrateBtn">🎉 點擊慶祝 🎉</button>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      recipient_name: "Emma",
+      celebration_type: "生日快樂!",
+      message_text: "願你的每一天都充滿歡笑與喜悅,祝你有個美好的一年!",
+      background_gradient_start: "#667eea",
+      background_gradient_middle: "#764ba2",
+      background_gradient_end: "#f093fb",
+      text_primary: "#764ba2",
+      button_gradient_start: "#667eea",
+      button_gradient_end: "#764ba2"
+    };
+
+    let config = { ...defaultConfig };
+
+    async function onConfigChange(newConfig) {
+      config = { ...config, ...newConfig };
+      
+      const recipientName = document.getElementById('recipientName');
+      const celebrationType = document.getElementById('celebrationType');
+      const messageText = document.getElementById('messageText');
+      const cardContainer = document.getElementById('cardContainer');
+      const celebration = document.querySelector('.celebration');
+      const button = document.querySelector('.interactive-button');
+      const nameElement = document.querySelector('.recipient-name');
+
+      recipientName.textContent = config.recipient_name || defaultConfig.recipient_name;
+      celebrationType.textContent = config.celebration_type || defaultConfig.celebration_type;
+      messageText.textContent = config.message_text || defaultConfig.message_text;
+
+      const bgStart = config.background_gradient_start || defaultConfig.background_gradient_start;
+      const bgMiddle = config.background_gradient_middle || defaultConfig.background_gradient_middle;
+      const bgEnd = config.background_gradient_end || defaultConfig.background_gradient_end;
+      cardContainer.style.background = `linear-gradient(135deg, ${bgStart} 0%, ${bgMiddle} 50%, ${bgEnd} 100%)`;
+
+      const textPrimary = config.text_primary || defaultConfig.text_primary;
+      celebration.style.color = textPrimary;
+
+      const btnStart = config.button_gradient_start || defaultConfig.button_gradient_start;
+      const btnEnd = config.button_gradient_end || defaultConfig.button_gradient_end;
+      button.style.background = `linear-gradient(135deg, ${btnStart}, ${btnEnd})`;
+      
+      nameElement.style.background = `linear-gradient(135deg, ${btnStart}, ${btnEnd})`;
+      nameElement.style.webkitBackgroundClip = 'text';
+      nameElement.style.backgroundClip = 'text';
+    }
+
+    function createConfetti() {
+      const colors = ['#ff6b9d', '#ffd93d', '#6bcf7f', '#667eea', '#764ba2', '#f093fb'];
+      const container = document.getElementById('cardContainer');
+      
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + '%';
+          confetti.style.top = '-10px';
+          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.animation = `confettiFall ${2 + Math.random() * 2}s linear forwards`;
+          confetti.style.animationDelay = Math.random() * 0.5 + 's';
+          
+          container.appendChild(confetti);
+          
+          setTimeout(() => confetti.remove(), 4000);
+        }, i * 30);
+      }
+    }
+
+    document.getElementById('celebrateBtn').addEventListener('click', createConfetti);
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_gradient_start || defaultConfig.background_gradient_start,
+              set: (value) => {
+                config.background_gradient_start = value;
+                window.elementSdk.setConfig({ background_gradient_start: value });
+              }
+            },
+            {
+              get: () => config.background_gradient_middle || defaultConfig.background_gradient_middle,
+              set: (value) => {
+                config.background_gradient_middle = value;
+                window.elementSdk.setConfig({ background_gradient_middle: value });
+              }
+            },
+            {
+              get: () => config.background_gradient_end || defaultConfig.background_gradient_end,
+              set: (value) => {
+                config.background_gradient_end = value;
+                window.elementSdk.setConfig({ background_gradient_end: value });
+              }
+            },
+            {
+              get: () => config.text_primary || defaultConfig.text_primary,
+              set: (value) => {
+                config.text_primary = value;
+                window.elementSdk.setConfig({ text_primary: value });
+              }
+            },
+            {
+              get: () => config.button_gradient_start || defaultConfig.button_gradient_start,
+              set: (value) => {
+                config.button_gradient_start = value;
+                window.elementSdk.setConfig({ button_gradient_start: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["recipient_name", config.recipient_name || defaultConfig.recipient_name],
+          ["celebration_type", config.celebration_type || defaultConfig.celebration_type],
+          ["message_text", config.message_text || defaultConfig.message_text]
+        ])
+      });
+    }
+
+    onConfigChange(config);
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'997b1aefb0058655',t:'MTc2MTk5NzA5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
